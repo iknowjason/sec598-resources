@@ -124,45 +124,32 @@
           },
           "actions": {
             "For_each": {
-              "foreach": "@triggerBody()?['object']?['properties']?['Alerts']",
+              "foreach": "@triggerBody()?['object']?['properties']?['alerts']",
               "actions": {
                 "Parse_JSON": {
                   "type": "ParseJson",
                   "inputs": {
-                    "content": "@items('For_each')?['properties']?['additionalData']?['Custom Details']",
+                    "content": "@items('For_each')?['properties']",
                     "schema": {
                       "type": "object",
                       "properties": {
-                        "ApplicationName": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "TimeGenerated": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "ActivityDisplayName": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "Property": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "Severity": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        }
+                        "systemAlertId": { "type": "string" },
+                        "alertDisplayName": { "type": "string" },
+                        "description": { "type": "string" },
+                        "confidenceLevel": { "type": "string" },
+                        "severity": { "type": "string" },
+                        "vendorName": { "type": "string" },
+                        "productName": { "type": "string" },
+                        "productComponentName": { "type": "string" },
+                        "alertType": { "type": "string" },
+                        "processingEndTime": { "type": "string" },
+                        "status": { "type": "string" },
+                        "endTimeUtc": { "type": "string" },
+                        "startTimeUtc": { "type": "string" },
+                        "timeGenerated": { "type": "string" },
+                        "providerAlertId": { "type": "string" },
+                        "additionalData": { "type": "object" },
+                        "friendlyName": { "type": "string" }
                       }
                     }
                   }
@@ -182,8 +169,8 @@
                     },
                     "method": "post",
                     "body": {
-                      "title": "Sentinel Alert: @{body('Parse_JSON')?['ActivityDisplayName']}",
-                      "body": "A new Sentinel alert has been generated with the following details:\n<br/>\n<br/>\n<strong>Alert Name:</strong> @{body('Parse_JSON')?['ActivityDisplayName']}\n<br/>\n<strong>Time Generated:</strong> @{body('Parse_JSON')?['TimeGenerated']}\n<br/>\n<strong>Severity:</strong> @{body('Parse_JSON')?['Severity']}\n<br/>\n<strong>Application:</strong> @{body('Parse_JSON')?['ApplicationName']}\n<br/>\n<strong>Additional Details:</strong> @{body('Parse_JSON')?['Property']}\n<br/>"
+                      "title": "Sentinel Alert: @{body('Parse_JSON')?['alertDisplayName']}",
+                      "body": "A new Sentinel alert has been generated with the following details:\n<br/>\n<br/>\n<strong>Alert Name:</strong> @{body('Parse_JSON')?['alertDisplayName']}\n<br/>\n<strong>Time Generated:</strong> @{body('Parse_JSON')?['timeGenerated']}\n<br/>\n<strong>Severity:</strong> @{body('Parse_JSON')?['severity']}\n<br/>\n<strong>Additional Details:</strong> @{replace(replace(replace(replace(string(body('Parse_JSON')?['additionalData']), '{', ''), '}', ''), ',', '<br/>'), '\"', '')}\n<br/>"
                     },
                     "path": "/repos/@{encodeURIComponent('Vjeroen')}/@{encodeURIComponent('secopsjeroenvdl')}/issues"
                   }
@@ -238,4 +225,3 @@
     }
   ]
 }
-
