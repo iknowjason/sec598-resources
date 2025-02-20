@@ -169,7 +169,7 @@
                     },
                     "method": "post",
                     "body": {
-                      "title": "Sentinel Alert: @{body('Parse_JSON')?['alertDisplayName']}",
+                      "title": "Sentinel Alert Severity @{body('Parse_JSON')?['severity']}: @{body('Parse_JSON')?['alertDisplayName']} at @{body('Parse_JSON')?['timeGenerated']}",
                       "body": "A new Sentinel alert has been generated with the following details:\n<br/>\n<br/>\n<strong>Alert Name:</strong> @{body('Parse_JSON')?['alertDisplayName']}\n<br/>\n<strong>Time Generated:</strong> @{body('Parse_JSON')?['timeGenerated']}\n<br/>\n<strong>Severity:</strong> @{body('Parse_JSON')?['severity']}\n<br/>\n<strong>Additional Details:</strong> @{replace(replace(replace(replace(string(body('Parse_JSON')?['additionalData']), '{', ''), '}', ''), ',', '<br/>'), '\"', '')}\n<br/>"
                     },
                     "path": "/repos/@{encodeURIComponent('Vjeroen')}/@{encodeURIComponent('secopsjeroenvdl')}/issues"
