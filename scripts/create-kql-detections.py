@@ -8,6 +8,55 @@ from llama_index.readers.web import SimpleWebPageReader
 import yaml
 import traceback
 
+def validate_customdetails(yaml_content):
+    """Ensure that only CommandLine is in the customDetails section."""
+    lines = yaml_content.split('\n')
+    in_customdetails = False
+    customdetails_lines = []
+
+    for line in lines:
+        if line.strip() == 'customDetails:':
+            in_customdetails = True
+            continue
+        elif in_customdetails:
+            if not line.startswith(' '):
+                in_customdetails = False
+            else:
+                customdetails_lines.append(line.strip())
+
+    # Check if there's anything other than CommandLine
+    valid_customdetails = ['CommandLine: CommandLine']
+    invalid_fields = [line for line in customdetails_lines if line not in valid_customdetails]
+
+    if invalid_fields:
+        print(f"[!] Warning: Invalid customDetails fields found: {invalid_fields}")
+        print("[!] Fixing customDetails to only include CommandLine...")
+
+        # Fix the YAML content
+        fixed_content = []
+        in_customdetails = False
+        skip_until_next_top_level = False
+
+        for line in lines:
+            if line.strip() == 'customDetails:':
+                fixed_content.append('customDetails:')
+                fixed_content.append('  CommandLine: CommandLine')
+                in_customdetails = True
+                skip_until_next_top_level = True
+                continue
+
+            if skip_until_next_top_level:
+                if not line.startswith(' ') and line.strip():
+                    skip_until_next_top_level = False
+                    in_customdetails = False
+                    fixed_content.append(line)
+            elif not in_customdetails:
+                fixed_content.append(line)
+
+        return '\n'.join(fixed_content)
+
+    return yaml_content
+
 def main():
     # Configure logging
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -108,6 +157,10 @@ def main():
         try:
             yaml_content = create_yaml_detection(yaml_templates, selected, sysmon_parser, kql_detection)
             print("[+] YAML content created successfully")
+
+            # Validate customDetails
+            yaml_content = validate_customdetails(yaml_content)
+
         except Exception as e:
             print(f"[!] Error creating YAML content: {e}")
             traceback.print_exc()
@@ -189,9 +242,11 @@ def generate_kql_detection(detection, query_engine, blog_url):
     I need to create a KQL query for an Azure Sentinel detection rule for the following detection:
     Name: {detection['name']}
     Description: {detection['description']}
-    
-    IMPORTANT: Create a KQL query that ONLY focuses on the CommandLine field in Sysmon EventID 1 (process creation) events.
-    DO NOT use any other fields like UserName, as they may not be available in our dataset.
+   
+    IMPORTANT REQUIREMENTS:
+    1. Create a KQL query that ONLY focuses on the CommandLine field in Sysmon EventID 1 (process creation) events.
+    2. DO NOT use any other fields like UserName, as they may not be available in our dataset.
+    3. The customDetails section in the YAML must ONLY include the CommandLine field, no other fields.
     
     Your query should start with filtering for Sysmon EventID 1, like:
     | where EventID == 1
