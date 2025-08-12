@@ -30,7 +30,7 @@ def validate_customdetails(yaml_content):
 
     if invalid_fields:
         print(f"[!] Warning: Invalid customDetails fields found: {invalid_fields}")
-        print("[!] Fixing customDetails to only include CommandLine...")
+        print("[!] Fixing customDetails to only include CommandLine")
 
         # Fix the YAML content
         fixed_content = []
@@ -145,7 +145,7 @@ def main():
         yaml_templates = load_yaml_templates()
         
         # Print out which example we'll be using
-        print(f"\n[+] Using template from example1.yaml as base for new detection")
+        print(f"\n[+] Using template as base for new detection")
         
         # Make a second query to OpenAI to generate the KQL detection logic
         print(f"\n[+] Generating KQL detection logic for: {selected['name']}")
@@ -153,7 +153,7 @@ def main():
         print("\n[+] KQL detection logic generated successfully")
         
         # Create YAML file with the detection
-        print("\n[+] Creating YAML file with detection rule...")
+        print("\n[+] Creating YAML file with detection rule")
         try:
             yaml_content = create_yaml_detection(yaml_templates, selected, sysmon_parser, kql_detection)
             print("[+] YAML content created successfully")
@@ -247,6 +247,7 @@ def generate_kql_detection(detection, query_engine, blog_url):
     1. Create a KQL query that ONLY focuses on the CommandLine field in Sysmon EventID 1 (process creation) events.
     2. DO NOT use any other fields like UserName, as they may not be available in our dataset.
     3. The customDetails section in the YAML must ONLY include the CommandLine field, no other fields.
+    4. DO NOT end the KQL query with "| project CommandLine".  Instead, you can end it with  "| project TimeGenerated, Computer, UserName, CommandLine".  This will avoid dropping fields still referenced in entityMappings.
     
     Your query should start with filtering for Sysmon EventID 1, like:
     | where EventID == 1
