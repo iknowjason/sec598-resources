@@ -7,6 +7,33 @@ from llama_index.core import SummaryIndex
 from llama_index.readers.web import SimpleWebPageReader
 import yaml
 import traceback
+from llama_index.core import Settings
+from llama_index.llms.openai import OpenAI
+
+Settings.llm = OpenAI(model="gpt-4o", temperature=0)
+
+def strip_code_fences(s: str) -> str:
+    import re
+    s = s.strip()
+    s = re.sub(r'^```[a-zA-Z0-9_-]*\s*', '', s)
+    s = re.sub(r'\s*```$', '', s)
+    return s
+
+def print_llm_info(prefix=""):
+    llm = Settings.llm
+    #print(f"{prefix}LLM object:", llm)
+    if llm is not None:
+        print("  Provider class:", llm.__class__.__name__)
+        print("  Provider module:", llm.__class__.__module__)
+        try:
+            print("  Model name:", getattr(llm, "metadata", None).model_name)
+        except Exception:
+            for attr in ("model", "model_name"):
+                if hasattr(llm, attr):
+                    print("  Model name:", getattr(llm, attr))
+                    break
+
+print_llm_info("[DEBUG] ")
 
 def validate_customdetails(yaml_content):
     """Ensure that only CommandLine is in the customDetails section."""
@@ -106,7 +133,12 @@ def main():
     # Show summary 
     print("\n===== Blog Summary and Detection Options =====\n")
     try:
-        result = json.loads(str(text_summary))
+
+        raw = getattr(text_summary, "response", None) or getattr(text_summary, "output_text", None) or str(text_summary)
+        raw = strip_code_fences(raw)
+        result = json.loads(raw)
+
+        #result = json.loads(str(text_summary))
         summary = result["summary"]
         detections = result["detections"]
         
@@ -153,7 +185,7 @@ def main():
         print("\n[+] KQL detection logic generated successfully")
         
         # Create YAML file with the detection
-        print("\n[+] Creating YAML file with detection rule")
+        print("\n[+] Creating YAML file with detection rule...")
         try:
             yaml_content = create_yaml_detection(yaml_templates, selected, sysmon_parser, kql_detection)
             print("[+] YAML content created successfully")
@@ -245,9 +277,8 @@ def generate_kql_detection(detection, query_engine, blog_url):
    
     IMPORTANT REQUIREMENTS:
     1. Create a KQL query that ONLY focuses on the CommandLine field in Sysmon EventID 1 (process creation) events.
-    2. DO NOT use any other fields like UserName, as they may not be available in our dataset.
-    3. The customDetails section in the YAML must ONLY include the CommandLine field, no other fields.
-    4. DO NOT end the KQL query with "| project CommandLine".  Instead, you can end it with  "| project TimeGenerated, Computer, UserName, CommandLine".  This will avoid dropping fields still referenced in entityMappings.
+    2. The customDetails section in the YAML must ONLY include the CommandLine field, no other fields.
+    3. Do not end with | project unless it includes all required columns. Prefer project-away earlier in the query.
     
     Your query should start with filtering for Sysmon EventID 1, like:
     | where EventID == 1
@@ -364,3 +395,4 @@ def create_yaml_detection(yaml_templates, detection, sysmon_parser, kql_detectio
 
 if __name__ == "__main__":
     main()
+
