@@ -1,5 +1,7 @@
 # Workflow Setup for Alert Enrichment Automation with OpenAI 
 
+This workflow will create a case and allow you to add an attachment for alert enrichment automated summarization.
+
 1. Upload the workflow: ```alert-enrichment.yaml```
 2. Add the following API Keys:
    - Secret Name: ```openai```; Secret keys:  ```OPENAI_API_KEY```
