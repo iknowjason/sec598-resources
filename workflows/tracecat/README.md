@@ -1,6 +1,6 @@
 # Workflow Setup for Alert Enrichment Automation with OpenAI 
 
-1. Upload the workflow
+1. Upload the workflow: ```alert-enrichment.yaml```
 2. Add all the API Keys 
 3. Go into your Default Workspace settings as shown in the image.  You will then allow file extensions and mime types.
 4. Add a file extension such as ```*.docm```
