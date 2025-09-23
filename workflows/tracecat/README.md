@@ -7,3 +7,5 @@
 5. Add Allowed MIME types such as ```application/vnd.ms-word.document.macroenabled.12```
 6. Toggle off the ```Validate file content```
 7. Click ```Upldate workspace settings```
+
+![workspace-settings](images/workspace-settings.png "workspace-settings")
