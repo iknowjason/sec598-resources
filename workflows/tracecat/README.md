@@ -3,13 +3,13 @@
 This workflow will create a case and allow you to add an attachment for alert enrichment automated summarization.
 
 1. Upload the workflow: ```alert-enrichment.yaml```
-2. Register and add the following API Keys:
+2. Register and add the following API Keys.  You can get the API Keys from each of the Websites shown below:
    - Secret Name: ```openai```; Secret keys:  ```OPENAI_API_KEY```; Website: https://platform.openai.com
    - Secret Name: ```sublime```; Secret keys:  ```SUBLIME_API_KEY```; Website: https://platform.sublime.security
    - Secret Name: ```urlscan```; Secret keys:  ```URLSCAN_API_KEY```; Website: https://urlscan.io/
    - Secret Name: ```virustotal```; Secret keys:  ```VIRUSTOTAL_API_KEY```; Website: https://www.virustotal.com
     
-4. Go into your Default Workspace settings as shown in the image.  You will then allow file extensions and mime types.
+4. Go into your Default Workspace settings as shown in the image below.  Add any file extensions and mime types you desire for processing of malware enrichment.
 5. Add a file extension such as ```.docm```
 6. Add Allowed MIME types such as ```application/vnd.ms-word.document.macroenabled.12```
 7. Toggle off the ```Validate file content```
