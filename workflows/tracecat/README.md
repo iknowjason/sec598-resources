@@ -8,4 +8,4 @@
 6. Toggle off the ```Validate file content```
 7. Click ```Upldate workspace settings```
 
-![workspace-settings](images/workspace-settings.png "workspace-settings")
+![workspace-settings](workspace-settings.png "workspace-settings")
