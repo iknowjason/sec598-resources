@@ -106,30 +106,32 @@ def main():
     # Call to OpenAI to summarize with prompt
     print("\n[+] Generating threat intelligence summary and detection options")
 
-    text_summary = query_engine.query('''
-    You are a Cyber Security expert with vast knowledge of detection engineering. I am an SOC Analyst and I need help writing a Detection.
-    
-    First, I want you to consume some threat intelligence from the following blog URL I will share with you.
-    I want you to briefly summarize the blog in 5 sentences or less.
-    
-    Then I want you to output five options for creating Detections of adversary behavior. The Detections will use Sysmon with CommandLine data.
-    The Detections will use KQL as Azure sentinel analytics rules.
-    
-    Format the output as JSON with this structure:
+    text_summary = query_engine.query("""
+    You are a cyber security defender helping a blue team / SOC write **defensive detections only**.
+    Do NOT provide exploit code, malware, payloads, or step-by-step attack instructions.
+
+    You will read threat intel from the following blog (already in context via the documents).
+    Your tasks:
+
+    1. Briefly summarize the adversary behaviors and TTPs in 5 sentences or less.
+    2. Propose five **defensive detection ideas** using Sysmon CommandLine data for Azure Sentinel KQL rules.
+       - Focus only on behaviors, patterns, and indicators suitable for defensive detection.
+       - Do NOT provide any exploit commands or “how-to attack” steps.
+
+    Return ONLY JSON in this exact structure:
     {
-        "summary": "Your 5-sentence summary here",
-        "detections": [
-            {"id": 1, "name": "Detection name 1", "description": "Description of detection 1"},
-            {"id": 2, "name": "Detection name 2", "description": "Description of detection 2"},
-            {"id": 3, "name": "Detection name 3", "description": "Description of detection 3"},
-            {"id": 4, "name": "Detection name 4", "description": "Description of detection 4"},
-            {"id": 5, "name": "Detection name 5", "description": "Description of detection 5"}
-        ]
+      "summary": "Your 5-sentence summary here",
+      "detections": [
+        {"id": 1, "name": "Detection name 1", "description": "Description of detection 1"},
+        {"id": 2, "name": "Detection name 2", "description": "Description of detection 2"},
+        {"id": 3, "name": "Detection name 3", "description": "Description of detection 3"},
+        {"id": 4, "name": "Detection name 4", "description": "Description of detection 4"},
+        {"id": 5, "name": "Detection name 5", "description": "Description of detection 5"}
+      ]
     }
-    
-    Only respond with the JSON structure, no additional text.
-    ''')
-    
+    Only respond with that JSON. Do not include any other text.
+    """) 
+
     # Show summary 
     print("\n===== Blog Summary and Detection Options =====\n")
     try:
@@ -395,4 +397,3 @@ def create_yaml_detection(yaml_templates, detection, sysmon_parser, kql_detectio
 
 if __name__ == "__main__":
     main()
-
