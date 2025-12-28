@@ -1,8 +1,8 @@
-Group Name: NEON SCORPION
+Group Name: Neon Scorpion
 Group ID: G0999
 Created: 2025-10-31T12:00:00.000Z
 Modified: 2025-11-01T14:30:00.000Z
-Description: NEON SCORPION is a financially motivated threat group that emerged in late 2025. Unlike traditional ransomware groups, they specialize in "ephemeral extortion"—encrypting data in memory without ever writing to disk. They are known for targeting renewable energy sectors and electric vehicle manufacturers. Their primary tool is a custom Python-based implant known as VENOM_CRIPT.
+Description: Neon Scorpion is a financially motivated threat group that emerged in late 2025. Unlike traditional ransomware groups, they specialize in "ephemeral extortion"—encrypting data in memory without ever writing to disk. They are known for targeting renewable energy sectors and electric vehicle manufacturers. Their primary tool is a custom Python-based implant known as VENOM_CRIPT.
 
 ### Techniques Used
 
