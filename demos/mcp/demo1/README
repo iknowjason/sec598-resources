@@ -1,0 +1,16 @@
+Installing Claude Desktop Application on Slingshot for MCP Demo
+
+Pre-requisites:  Install Claude Desktop following these instructions with binary package:
+https://github.com/aaddrick/claude-desktop-debian
+
+1. On slingshot linux, Place the claude_desktop_config.json into ~/.config/Claude/.
+
+2. Place the security_server.py into a new directory:
+/home/sec598/tools/security-mcp-server/src
+
+3. Place the requirements.txt into:
+/home/sec598/tools/security-mcp-server
+
+4. Note:  You might need to do a pip install
+
+5. Replace your Virustotal API Key in claude_desktop_config.json
