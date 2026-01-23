@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "security": {
+      "command": "python3",
+      "args": ["/home/sec598/tools/security-mcp-server/src/security_server.py"],
+      "env": {
+        "VIRUSTOTAL_API_KEY": "INSERT_YOUR_KEY"
+      }
+    }
+  }
+}
