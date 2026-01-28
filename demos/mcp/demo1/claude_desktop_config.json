@@ -4,7 +4,9 @@
       "command": "python3",
       "args": ["/home/sec598/tools/security-mcp-server/src/security_server.py"],
       "env": {
-        "VIRUSTOTAL_API_KEY": "INSERT_YOUR_KEY"
+        "VIRUSTOTAL_API_KEY": "INSERT_YOUR_KEY",
+        "HYBRID_ANALYSIS_API_KEY": "INSERT_YOUR_KEY",
+        "SERPER_API_KEY": "INSERT_YOUR_KEY"
       }
     }
   }
