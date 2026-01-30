@@ -1,4 +1,6 @@
 # Timesketch container dependencies
+# PATCHED: Added shared /tmp volume for timesketch-web and timesketch-worker
+# This fixes the issue where uploaded files in web's /tmp are inaccessible to worker
 x-timesketch-dependencies: &timesketch-dependencies
   depends_on:
     opensearch:
@@ -11,7 +13,7 @@ x-timesketch-dependencies: &timesketch-dependencies
 services:
   timesketch-web:
     container_name: timesketch-web
-    image: us-docker.pkg.dev/osdfir-registry/timesketch/timesketch:20231206
+    image: us-docker.pkg.dev/osdfir-registry/timesketch/timesketch:${TIMESKETCH_VERSION}
     environment:
       - NUM_WSGI_WORKERS=${NUM_WSGI_WORKERS}
     restart: always
@@ -20,6 +22,7 @@ services:
       - ${TIMESKETCH_CONFIG_PATH}:/etc/timesketch/
       - ${TIMESKETCH_UPLOAD_PATH}:/usr/share/timesketch/upload/
       - ${TIMESKETCH_LOGS_PATH}:/var/log/timesketch/
+      - ${TIMESKETCH_TMP_PATH}:/tmp
     <<: *timesketch-dependencies
 
   # [DEPRECATED] Add "--profile legacy-ui" to your docker compose command to use the legacy UI
@@ -36,6 +39,7 @@ services:
       - ${TIMESKETCH_CONFIG_PATH}:/etc/timesketch/
       - ${TIMESKETCH_UPLOAD_PATH}:/usr/share/timesketch/upload/
       - ${TIMESKETCH_LOGS_PATH}:/var/log/timesketch/
+      - ${TIMESKETCH_TMP_PATH}:/tmp
     <<: *timesketch-dependencies
 
   # [WIP] Add "--profile v3-ui" to your docker compose command to use the vue3 UI
@@ -52,11 +56,12 @@ services:
       - ${TIMESKETCH_CONFIG_PATH}:/etc/timesketch/
       - ${TIMESKETCH_UPLOAD_PATH}:/usr/share/timesketch/upload/
       - ${TIMESKETCH_LOGS_PATH}:/var/log/timesketch/
+      - ${TIMESKETCH_TMP_PATH}:/tmp
     <<: *timesketch-dependencies
 
   timesketch-worker:
     container_name: timesketch-worker
-    image: us-docker.pkg.dev/osdfir-registry/timesketch/timesketch:20231206
+    image: us-docker.pkg.dev/osdfir-registry/timesketch/timesketch:${TIMESKETCH_VERSION}
     environment:
       - WORKER_LOG_LEVEL=${WORKER_LOG_LEVEL}
     restart: always
@@ -65,11 +70,12 @@ services:
       - ${TIMESKETCH_CONFIG_PATH}:/etc/timesketch/
       - ${TIMESKETCH_UPLOAD_PATH}:/usr/share/timesketch/upload/
       - ${TIMESKETCH_LOGS_PATH}:/var/log/timesketch/
+      - ${TIMESKETCH_TMP_PATH}:/tmp
     <<: *timesketch-dependencies
 
   opensearch:
     container_name: opensearch
-    image: opensearchproject/opensearch:2.5.0
+    image: opensearchproject/opensearch:${OPENSEARCH_VERSION}
     restart: always
     environment:
       - TAKE_FILE_OWNERSHIP=1
