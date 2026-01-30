@@ -1,6 +1,7 @@
 # Timesketch container dependencies
 # PATCHED: Added shared /tmp volume for timesketch-web and timesketch-worker
 # This fixes the issue where uploaded files in web's /tmp are inaccessible to worker
+# PATCHED: Added winevt_rc.py mount for timesketch-worker to fix Plaso NoneType bug
 x-timesketch-dependencies: &timesketch-dependencies
   depends_on:
     opensearch:
@@ -71,6 +72,7 @@ services:
       - ${TIMESKETCH_UPLOAD_PATH}:/usr/share/timesketch/upload/
       - ${TIMESKETCH_LOGS_PATH}:/var/log/timesketch/
       - ${TIMESKETCH_TMP_PATH}:/tmp
+      - ${TIMESKETCH_PLASO_PATCH_PATH}:/usr/lib/python3/dist-packages/plaso/output/winevt_rc.py:ro
     <<: *timesketch-dependencies
 
   opensearch:
