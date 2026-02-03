@@ -1,0 +1,133 @@
+#!/bin/bash
+# hello_ai - Test your AI API key configuration
+# Download: curl -O https://raw.githubusercontent.com/YOUR_ORG/ai-labs/main/hello_ai
+
+set -e
+
+echo "=========================================="
+echo "  LLM Model AI Labs - API Key Test"
+echo "=========================================="
+echo ""
+
+# Check if API key is set
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo "✗ ERROR: OPENAI_API_KEY is not set"
+    echo ""
+    echo "Run 'source ~/.bashrc' or start a new terminal,"
+    echo "or run 'set_aikeys.sh' to configure your keys."
+    exit 1
+fi
+
+echo "✓ OPENAI_API_KEY is set"
+
+# Check which endpoint we're using
+if [ -z "$OPENAI_API_BASE" ]; then
+    API_URL="https://api.openai.com/v1/chat/completions"
+    echo "✓ Using direct OpenAI API"
+else
+    API_URL="${OPENAI_API_BASE}/chat/completions"
+    echo "✓ Using SANS LiteLLM proxy: $OPENAI_API_BASE"
+fi
+
+echo ""
+echo "Testing API connection"
+echo ""
+
+# Request parameters
+MODEL_NAME="gpt-4o"
+TEMPERATURE=1.0
+MAX_TOKENS=50
+
+# Capture start time
+START_TIME=$(date +%s%3N 2>/dev/null || python3 -c 'import time; print(int(time.time()*1000))')
+
+# Make a simple API call
+RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$API_URL" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -d "{
+        \"model\": \"$MODEL_NAME\",
+        \"messages\": [
+            {\"role\": \"user\", \"content\": \"Say hello in exactly 5 words.\"}
+        ],
+        \"temperature\": $TEMPERATURE,
+        \"max_tokens\": $MAX_TOKENS
+    }" 2>&1)
+
+# Capture end time and calculate duration
+END_TIME=$(date +%s%3N 2>/dev/null || python3 -c 'import time; print(int(time.time()*1000))')
+ELAPSED_MS=$((END_TIME - START_TIME))
+
+# Extract HTTP status code (last line)
+HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+BODY=$(echo "$RESPONSE" | sed '$d')
+
+if [ "$HTTP_CODE" = "200" ]; then
+    # Extract the message content, model, and token usage
+    if command -v jq &> /dev/null; then
+        MESSAGE=$(echo "$BODY" | jq -r '.choices[0].message.content')
+        MODEL=$(echo "$BODY" | jq -r '.model')
+        PROMPT_TOKENS=$(echo "$BODY" | jq -r '.usage.prompt_tokens // "N/A"')
+        COMPLETION_TOKENS=$(echo "$BODY" | jq -r '.usage.completion_tokens // "N/A"')
+        TOTAL_TOKENS=$(echo "$BODY" | jq -r '.usage.total_tokens // "N/A"')
+    else
+        # Fallback if jq not installed
+        MESSAGE=$(echo "$BODY" | grep -o '"content":"[^"]*"' | head -1 | sed 's/"content":"//;s/"$//')
+        MODEL=$(echo "$BODY" | grep -o '"model":"[^"]*"' | head -1 | sed 's/"model":"//;s/"$//')
+        PROMPT_TOKENS=$(echo "$BODY" | grep -o '"prompt_tokens":[0-9]*' | head -1 | sed 's/"prompt_tokens"://')
+        COMPLETION_TOKENS=$(echo "$BODY" | grep -o '"completion_tokens":[0-9]*' | head -1 | sed 's/"completion_tokens"://')
+        TOTAL_TOKENS=$(echo "$BODY" | grep -o '"total_tokens":[0-9]*' | head -1 | sed 's/"total_tokens"://')
+    fi
+
+    # Format elapsed time
+    if [ "$ELAPSED_MS" -ge 1000 ]; then
+        ELAPSED_DISPLAY="$((ELAPSED_MS / 1000)).$((ELAPSED_MS % 1000 / 100))s"
+    else
+        ELAPSED_DISPLAY="${ELAPSED_MS}ms"
+    fi
+
+    echo "=========================================="
+    echo "  ✓ SUCCESS! API Connection Working"
+    echo "=========================================="
+    echo ""
+    echo "  Model:       $MODEL"
+    echo "  Temperature: $TEMPERATURE"
+    echo "  Latency:     $ELAPSED_DISPLAY"
+    echo ""
+    echo "  Tokens:      $PROMPT_TOKENS prompt + $COMPLETION_TOKENS completion = $TOTAL_TOKENS total"
+    echo ""
+    echo "  ──────────────────────────────────────"
+    echo "  Prompt:   \"Say hello in exactly 5 words.\""
+    echo "  Response: $MESSAGE"
+    echo "  ──────────────────────────────────────"
+    echo ""
+    echo "=========================================="
+    echo ""
+    echo "Your API keys are configured correctly!"
+    echo "You're ready to start the lab exercises."
+    echo ""
+else
+    echo "=========================================="
+    echo "  ✗ API TEST FAILED"
+    echo "=========================================="
+    echo ""
+    echo "HTTP Status: $HTTP_CODE"
+    echo ""
+
+    # Try to extract error message
+    ERROR_MSG=$(echo "$BODY" | grep -o '"message":"[^"]*"' | head -1 | sed 's/"message":"//;s/"$//')
+
+    if [ -n "$ERROR_MSG" ]; then
+        echo "Error: $ERROR_MSG"
+    else
+        echo "Response: $BODY"
+    fi
+
+    echo ""
+    echo "Troubleshooting:"
+    echo "  1. Verify your API key is correct"
+    echo "  2. Check your SANS My Labs page for updated keys"
+    echo "  3. Run 'set_aikeys.sh' to reconfigure"
+    echo ""
+    exit 1
+fi
