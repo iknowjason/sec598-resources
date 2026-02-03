@@ -1,6 +1,5 @@
 #!/bin/bash
 # hello_ai - Test your AI API key configuration
-# Download: curl -O https://raw.githubusercontent.com/YOUR_ORG/ai-labs/main/hello_ai
 
 set -e
 
