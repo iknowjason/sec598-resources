@@ -1,0 +1,52 @@
+#!/bin/bash
+# set_aikeys.sh - Configure SANS LiteLLM API keys for AI Labs
+# Download: curl -O https://raw.githubusercontent.com/YOUR_ORG/ai-labs/main/set_aikeys.sh
+
+set -e
+
+BASHRC="$HOME/.bashrc"
+
+echo "=========================================="
+echo "  LLM Model Inference - API Key Configuration"
+echo "=========================================="
+echo ""
+
+# Prompt for API key
+read -p "Enter your SANS LiteLLM API Key: " API_KEY
+
+if [ -z "$API_KEY" ]; then
+    echo "Error: API key cannot be empty."
+    exit 1
+fi
+
+# Remove any existing AI key configurations to avoid duplicates
+if [ -f "$BASHRC" ]; then
+    # Create backup
+    cp "$BASHRC" "$BASHRC.backup.$(date +%Y%m%d_%H%M%S)"
+
+    # Remove existing OPENAI entries (both export and comments)
+    grep -v "OPENAI_API_KEY" "$BASHRC" | grep -v "OPENAI_API_BASE" | grep -v "# SANS AI Labs" > "$BASHRC.tmp" || true
+    mv "$BASHRC.tmp" "$BASHRC"
+fi
+
+# Add new configuration
+cat >> "$BASHRC" << EOF
+
+# SANS AI Labs - LiteLLM Configuration
+export OPENAI_API_KEY="$API_KEY"
+export OPENAI_API_BASE="https://sans.litellm-prod.ai"
+EOF
+
+echo ""
+echo "✓ API keys configured in $BASHRC"
+echo ""
+echo "To activate the keys in your current session, run:"
+echo ""
+echo "    source ~/.bashrc"
+echo ""
+echo "Or start a new terminal session."
+echo ""
+echo "To verify your setup works, run:"
+echo ""
+echo "    hello_ai"
+echo ""
