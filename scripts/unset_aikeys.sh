@@ -1,0 +1,58 @@
+#!/bin/bash
+# unset_aikeys.sh - Switch from SANS LiteLLM to your own OpenAI API keys
+# Download: curl -O https://raw.githubusercontent.com/YOUR_ORG/ai-labs/main/unset_aikeys.sh
+
+set -e
+
+BASHRC="$HOME/.bashrc"
+
+echo "=========================================="
+echo "  LLM Model Inference - Use Your Own API Keys"
+echo "=========================================="
+echo ""
+
+# Prompt for personal API key
+read -p "Enter your personal OpenAI API Key: " API_KEY
+
+if [ -z "$API_KEY" ]; then
+    echo "Error: API key cannot be empty."
+    exit 1
+fi
+
+# Remove any existing AI key configurations
+if [ -f "$BASHRC" ]; then
+    # Create backup
+    cp "$BASHRC" "$BASHRC.backup.$(date +%Y%m%d_%H%M%S)"
+
+    # Remove existing OPENAI entries
+    grep -v "OPENAI_API_KEY" "$BASHRC" | grep -v "OPENAI_API_BASE" | grep -v "# SANS AI Labs" > "$BASHRC.tmp" || true
+    mv "$BASHRC.tmp" "$BASHRC"
+fi
+
+# Add personal key configuration with explicit unset of base URL
+cat >> "$BASHRC" << EOF
+
+# SANS AI Labs - Personal OpenAI Configuration
+export OPENAI_API_KEY="$API_KEY"
+unset OPENAI_API_BASE  # Clear proxy URL to use direct OpenAI API
+EOF
+
+# Unset in current session as well
+unset OPENAI_API_BASE 2>/dev/null || true
+
+echo ""
+echo "✓ Switched to personal OpenAI API key in $BASHRC"
+echo "✓ OPENAI_API_BASE has been removed (direct OpenAI access)"
+echo ""
+echo "To activate the keys in your current session, run:"
+echo ""
+echo "    source ~/.bashrc"
+echo ""
+echo "Or start a new terminal session."
+echo ""
+echo "To verify your setup works, run:"
+echo ""
+echo "    hello_ai"
+echo ""
+echo "To switch back to SANS LiteLLM keys, run set_aikeys.sh again."
+echo ""
