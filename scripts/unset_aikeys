@@ -1,6 +1,5 @@
 #!/bin/bash
 # unset_aikeys.sh - Switch from SANS LiteLLM to your own OpenAI API keys
-# Download: curl -O https://raw.githubusercontent.com/YOUR_ORG/ai-labs/main/unset_aikeys.sh
 
 set -e
 
