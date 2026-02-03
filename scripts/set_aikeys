@@ -1,6 +1,5 @@
 #!/bin/bash
 # set_aikeys.sh - Configure SANS LiteLLM API keys for AI Labs
-# Download: curl -O https://raw.githubusercontent.com/YOUR_ORG/ai-labs/main/set_aikeys.sh
 
 set -e
 
