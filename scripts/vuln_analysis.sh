@@ -14,7 +14,7 @@ echo "Products that will be processed:"
 cat "$TEMP_FILE"
 echo ""
 
-LOG_FILE="cvemap_run.log"
+LOG_FILE="vulnx_run.log"
 RESULT_FILE="/home/ubuntu/cve_result.txt"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting CVE mapping for products in $INPUT_FILE" > "$LOG_FILE"
 
@@ -40,8 +40,8 @@ for product in "${products[@]}"; do
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Processing $CURRENT/$TOTAL_PRODUCTS: '$product'"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Processing $CURRENT/$TOTAL_PRODUCTS: '$product'" >> "$LOG_FILE"
     
-    # Run cvemap command with explicit shell to avoid potential issues
-    bash -c "cvemap -p \"$product\" -j > \"$output_file\""
+    # Run vulnx command with explicit shell to avoid potential issues
+    bash -c "vulnx search \"$product\" -j > \"$output_file\""
     
     # Check if command succeeded
     if [ $? -eq 0 ]; then
@@ -49,8 +49,8 @@ for product in "${products[@]}"; do
         echo "  ✓ Successfully generated $output_file" >> "$LOG_FILE"
         
         # Check for vulnerabilities discovered in the last x number of days 
-        #new_vulns=$(jq -r '.[] | select(.age_in_days < 1) | {cve_id, cve_description, cvss_score, severity}' "$output_file")
-        new_vulns=$(jq -r '.[] | select(.age_in_days < 180) | {cve_id, cve_description, cvss_score, severity}' "$output_file")
+        new_vulns=$(jq -r '.results[] | select(.age_in_days < 1) | {cve_id, cve_description, cvss_score, severity}' "$output_file")
+        #new_vulns=$(jq -r '.results[] | select(.age_in_days < 170) | {cve_id, cve_description, cvss_score, severity}' "$output_file")
         
         if [ -n "$new_vulns" ]; then
             echo "  ! New vulnerabilities discovered in '$product'"
@@ -66,8 +66,8 @@ for product in "${products[@]}"; do
             echo "  - No new vulnerabilities found for '$product'" >> "$LOG_FILE"
         fi
     else
-        echo "  ✗ Error running cvemap for '$product'"
-        echo "  ✗ Error running cvemap for '$product'" >> "$LOG_FILE"
+        echo "  ✗ Error running vulnx for '$product'"
+        echo "  ✗ Error running vulnx for '$product'" >> "$LOG_FILE"
     fi
     
     sleep 1
