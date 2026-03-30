@@ -13,6 +13,6 @@ This workflow will create a case and allow you to add an attachment for alert en
 5. Add a file extension such as ```.docm```
 6. Add Allowed MIME types such as ```application/vnd.ms-word.document.macroenabled.12```
 7. Toggle off the ```Validate file content```
-8. Click ```Upldate workspace settings```
+8. Click ```Update workspace settings```
 
 ![workspace-settings](workspace-settings.png "workspace-settings")
