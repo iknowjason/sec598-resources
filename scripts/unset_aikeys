@@ -24,7 +24,7 @@ if [ -f "$BASHRC" ]; then
     cp "$BASHRC" "$BASHRC.backup.$(date +%Y%m%d_%H%M%S)"
 
     # Remove existing OPENAI entries
-    grep -v "OPENAI_API_KEY" "$BASHRC" | grep -v "OPENAI_API_BASE" | grep -v "# SANS AI Labs" > "$BASHRC.tmp" || true
+    grep -v "OPENAI_API_KEY" "$BASHRC" | grep -v "OPENAI_API_BASE" |  grep -v "OPENAI_BASE_URL" | grep -v "# SANS AI Labs" > "$BASHRC.tmp" || true
     mv "$BASHRC.tmp" "$BASHRC"
 fi
 
@@ -34,6 +34,7 @@ cat >> "$BASHRC" << EOF
 # SANS AI Labs - Personal OpenAI Configuration
 export OPENAI_API_KEY="$API_KEY"
 unset OPENAI_API_BASE  # Clear proxy URL to use direct OpenAI API
+unset OPENAI_BASE_URL  # Clear proxy URL to use direct OpenAI API
 EOF
 
 # Unset in current session as well
