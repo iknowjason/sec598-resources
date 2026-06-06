@@ -34,6 +34,7 @@ cat >> "$BASHRC" << EOF
 # SANS AI Labs - LiteLLM Configuration
 export OPENAI_API_KEY="$API_KEY"
 export OPENAI_BASE_URL="https://sans.litellm-prod.ai"
+export OPENAI_API_BASE="https://sans.litellm-prod.ai"
 EOF
 
 echo ""
