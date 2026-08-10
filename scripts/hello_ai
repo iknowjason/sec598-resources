@@ -30,10 +30,12 @@ fi
 
 echo ""
 echo "Testing API connection"
-echo ""  and I'm sure everyone of those 80,000But they still need to be created had to get up
+echo ""
 # Request parameters
 #MODEL_NAME="us.anthropic.claude-sonnet-4-5-20250929-v1:0"
 MODEL_NAME="gpt-4o"
+TEMPERATURE="${TEMPERATURE:-0.7}"
+MAX_TOKENS="${MAX_TOKENS:-50}"
 # Capture start time
 START_TIME=$(date +%s%3N 2>/dev/null || python3 -c 'import time; print(int(time.time()*1000))')
 
