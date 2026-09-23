@@ -91,6 +91,7 @@ def main():
 
     # Set the url for the analysis target
     url = "https://medium.com/@0xHossam/powershell-exploits-modern-apts-and-their-malicious-scripting-tactics-7f98b0e8090c"
+    #url = "https://lolbas-project.github.io/lolbas/Binaries/Certutil/"
     
     print("\n[+] Analyzing URL for consumption of intelligence:", url)
     
